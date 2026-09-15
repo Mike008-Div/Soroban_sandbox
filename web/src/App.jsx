@@ -33,13 +33,20 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>Soroban Sandbox</h1>
-      <p className="subtitle">Local dev dashboard — accounts, contracts, and scenario runs.</p>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <header>
+        <h1>Soroban Sandbox</h1>
+        <p className="subtitle">Local dev dashboard — accounts, contracts, and scenario runs.</p>
+      </header>
 
-      <StatusHeader status={status} />
-      <AccountsPanel accounts={accounts} />
-      <ContractsPanel contracts={contracts} />
-      <ScenarioRunner />
+      <main id="main-content">
+        <StatusHeader status={status} />
+        <AccountsPanel accounts={accounts} />
+        <ContractsPanel contracts={contracts} />
+        <ScenarioRunner />
+      </main>
     </div>
   );
 }

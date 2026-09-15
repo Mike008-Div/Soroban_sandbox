@@ -1,8 +1,8 @@
 export default function ContractsPanel({ contracts }) {
   const names = Object.keys(contracts);
   return (
-    <div className="panel">
-      <h2>Contracts ({names.length})</h2>
+    <section className="panel" aria-labelledby="contracts-heading">
+      <h2 id="contracts-heading">Contracts ({names.length})</h2>
       {names.length === 0 ? (
         <p className="empty">
           No contracts deployed yet. Run <code>sandbox deploy &lt;wasm&gt;</code>.
@@ -15,6 +15,6 @@ export default function ContractsPanel({ contracts }) {
           </div>
         ))
       )}
-    </div>
+    </section>
   );
 }

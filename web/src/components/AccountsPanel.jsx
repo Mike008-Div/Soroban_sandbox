@@ -1,8 +1,8 @@
 export default function AccountsPanel({ accounts }) {
   const names = Object.keys(accounts);
   return (
-    <div className="panel">
-      <h2>Accounts ({names.length})</h2>
+    <section className="panel" aria-labelledby="accounts-heading">
+      <h2 id="accounts-heading">Accounts ({names.length})</h2>
       {names.length === 0 ? (
         <p className="empty">
           No accounts yet. Run <code>sandbox seed --config sandbox.config.json</code>.
@@ -15,6 +15,6 @@ export default function AccountsPanel({ accounts }) {
           </div>
         ))
       )}
-    </div>
+    </section>
   );
 }
