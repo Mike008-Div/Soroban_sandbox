@@ -1,5 +1,14 @@
-export default function ContractsPanel({ contracts }) {
-  const names = Object.keys(contracts);
+export default function ContractsPanel({ contracts, loading }) {
+  if (loading) {
+    return (
+      <div className="panel">
+        <h2>Contracts</h2>
+        <p className="empty">Loading contracts...</p>
+      </div>
+    );
+  }
+
+  const names = Object.keys(contracts || {});
   return (
     <div className="panel">
       <h2>Contracts ({names.length})</h2>

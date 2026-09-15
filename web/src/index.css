@@ -134,3 +134,32 @@ input[type="text"] {
   font-size: 13px;
   color: #c9cdd3;
 }
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.error-panel {
+  border-color: #7f1d1d;
+  background: #1f1214;
+}
+
+.font-bold {
+  font-weight: 600;
+}
+
+.loading-state {
+  color: #9aa0a6;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.retry-btn {
+  background: #374151;
+}
+
+.retry-btn:hover {
+  background: #4b5563;
+}

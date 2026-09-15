@@ -1,5 +1,14 @@
-export default function AccountsPanel({ accounts }) {
-  const names = Object.keys(accounts);
+export default function AccountsPanel({ accounts, loading }) {
+  if (loading) {
+    return (
+      <div className="panel">
+        <h2>Accounts</h2>
+        <p className="empty">Loading accounts...</p>
+      </div>
+    );
+  }
+
+  const names = Object.keys(accounts || {});
   return (
     <div className="panel">
       <h2>Accounts ({names.length})</h2>

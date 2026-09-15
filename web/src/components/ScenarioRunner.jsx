@@ -7,6 +7,11 @@ export default function ScenarioRunner() {
   const [error, setError] = useState(null);
 
   async function handleRun() {
+    if (!path.trim()) {
+      setError("Scenario path cannot be empty.");
+      setOutcome(null);
+      return;
+    }
     setRunning(true);
     setError(null);
     setOutcome(null);
@@ -14,13 +19,18 @@ export default function ScenarioRunner() {
       const res = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scenarioPath: path }),
+        body: JSON.stringify({ scenarioPath: path.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Scenario run failed");
+      let data;
+      try {
+        data = await res.json();
+      } catch (_) {
+        throw new Error(`Server returned HTTP ${res.status} (${res.statusText})`);
+      }
+      if (!res.ok) throw new Error(data?.error || `Scenario run failed with HTTP ${res.status}`);
       setOutcome(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to contact scenario runner API");
     } finally {
       setRunning(false);
     }
@@ -35,27 +45,52 @@ export default function ScenarioRunner() {
           value={path}
           onChange={(e) => setPath(e.target.value)}
           placeholder="path/to/scenario.json"
+          disabled={running}
         />
         <button onClick={handleRun} disabled={running}>
           {running ? "Running..." : "Run"}
         </button>
       </div>
 
-      {error && <p className="step"><span className="fail">Error:</span> {error}</p>}
+      {running && (
+        <p className="loading-state">
+          Executing scenario steps against sandbox...
+        </p>
+      )}
+
+      {error && (
+        <div style={{ marginTop: 8 }} role="alert">
+          <p className="step">
+            <span className="fail font-bold">Runner Unavailable / Error:</span> {error}
+          </p>
+          <button
+            className="retry-btn"
+            onClick={handleRun}
+            disabled={running}
+            style={{ marginTop: 8 }}
+          >
+            Retry Scenario
+          </button>
+        </div>
+      )}
 
       {outcome && (
         <>
-          {outcome.results.map((r, i) => (
-            <div className="step" key={i}>
-              {r.ok ? (
-                <span className="pass">PASS</span>
-              ) : (
-                <span className="fail">FAIL</span>
-              )}{" "}
-              — {r.label}
-              {!r.ok && r.error && <div className="mono">{r.error}</div>}
-            </div>
-          ))}
+          {outcome.results.length === 0 ? (
+            <p className="empty">Scenario completed with no steps executed.</p>
+          ) : (
+            outcome.results.map((r, i) => (
+              <div className="step" key={i}>
+                {r.ok ? (
+                  <span className="pass">PASS</span>
+                ) : (
+                  <span className="fail">FAIL</span>
+                )}{" "}
+                — {r.label}
+                {!r.ok && r.error && <div className="mono">{r.error}</div>}
+              </div>
+            ))
+          )}
           <div className="summary">
             {outcome.passed} passed, {outcome.failed} failed
           </div>
