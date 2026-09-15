@@ -2,6 +2,8 @@
 
 This is a small Soroban Rust contract used by the sandbox walkthrough. It stores balances under string labels (`alice`, `bob`, and so on) so it can be driven by the sandbox's current JSON scenario format.
 
+On Windows, Cargo also requires Visual Studio Build Tools with the **Desktop development with C++** workload. Without `link.exe`, the Rust build and test commands cannot compile their dependencies.
+
 It is intentionally a teaching fixture, not a production token: there is no authorization, metadata, allowance, or Stellar `Address` handling. A real token should follow Soroban's token standards and require authorization for state-changing operations.
 
 ## Build and run

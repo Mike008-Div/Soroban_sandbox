@@ -30,6 +30,8 @@ This is pure developer infrastructure. It doesn't compete with any existing proj
 
 Requires [Docker](https://www.docker.com/), [Node.js 18+](https://nodejs.org/), the [Rust toolchain](https://www.rust-lang.org/tools/install) with the `wasm32-unknown-unknown` target, and the [Soroban / Stellar CLI](https://developers.stellar.org/docs/tools/developer-tools) on your PATH.
 
+On Windows, install Visual Studio Build Tools with the **Desktop development with C++** workload so Cargo can find the MSVC linker (`link.exe`).
+
 ```bash
 npm install
 rustup target add wasm32-unknown-unknown
