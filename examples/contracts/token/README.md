@@ -1,6 +1,8 @@
 # Sandbox token contract
 
-This is a small Soroban Rust contract used by the sandbox walkthrough. It stores balances under string labels (`alice`, `bob`, and so on) so it can be driven by the sandbox's current JSON scenario format.
+This is a Soroban Rust contract used by the sandbox walkthrough. It stores balances by Stellar `Address`, requires authorization for initialization and transfers, and includes Rust tests for successful and rejected transfers. Scenario files refer to seeded accounts by name; the sandbox resolves those names to public keys before invoking the contract.
+
+This remains a compact example rather than a standards-compliant production token: it does not implement token metadata, allowances, or the full Soroban token interface.
 
 On Windows, Cargo also requires Visual Studio Build Tools with the **Desktop development with C++** workload. Without `link.exe`, the Rust build and test commands cannot compile their dependencies.
 

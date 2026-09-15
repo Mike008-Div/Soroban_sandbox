@@ -6,7 +6,7 @@
       "as": "alice",
       "method": "init",
       "args": [
-        { "name": "owner", "value": "alice" },
+        { "name": "admin", "value": { "account": "alice" } },
         { "name": "amount", "value": 1000 }
       ]
     },
@@ -16,8 +16,8 @@
       "as": "alice",
       "method": "transfer",
       "args": [
-        { "name": "from", "value": "alice" },
-        { "name": "to", "value": "bob" },
+        { "name": "from", "value": { "account": "alice" } },
+        { "name": "to", "value": { "account": "bob" } },
         { "name": "amount", "value": 100 }
       ]
     },
@@ -26,7 +26,7 @@
       "contract": "token",
       "as": "bob",
       "method": "balance",
-      "args": [{ "name": "id", "value": "bob" }],
+      "args": [{ "name": "id", "value": { "account": "bob" } }],
       "expect": "100"
     }
   ]

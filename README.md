@@ -47,7 +47,7 @@ See `examples/sandbox.config.json` and `examples/scenario.example.json` for the 
 
 ### Rust contract example
 
-The repository includes a minimal Soroban Rust contract and an end-to-end scenario in `examples/contracts/token`. Follow its [README](examples/contracts/token/README.md) to build the contract to WASM, deploy it to the local sandbox, and run the scenario.
+The repository includes an Address-based, authorization-aware Soroban Rust contract with Rust tests and an end-to-end scenario in `examples/contracts/token`. Follow its [README](examples/contracts/token/README.md) to test, build the contract to WASM, deploy it to the local sandbox, and run the scenario.
 
 ## Dashboard (React)
 
