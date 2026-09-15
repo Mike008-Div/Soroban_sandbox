@@ -10,9 +10,18 @@ From the repository root, install the Rust target and build the WASM:
 
 ```bash
 rustup target add wasm32-unknown-unknown
-cd examples/contracts/token
-cargo build --target wasm32-unknown-unknown --release
-cd ../../..
+npm run contract:build
+```
+
+Run the contract's Rust tests with:
+
+```bash
+npm run contract:test
+```
+
+Then start the sandbox, deploy the generated WASM, and run the scenario:
+
+```bash
 node src/index.js init
 node src/index.js seed --config examples/sandbox.config.json
 node src/index.js deploy examples/contracts/token/target/wasm32-unknown-unknown/release/sandbox_token.wasm --as alice --name token

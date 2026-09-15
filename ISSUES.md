@@ -47,7 +47,7 @@ A test (can be a shell script or JS) that runs `init → seed → deploy → run
 **#8 — `--json` output mode**
 Add a global `--json` flag so `status`, `deploy`, and `run` can emit machine-readable output instead of formatted console logs, for use in other tooling/CI.
 
-**#9 — Example contract + walkthrough**
+**#9 — Example contract + walkthrough** — implemented
 Add a minimal example Soroban token contract (Rust) under `examples/contracts/`, plus a scenario file exercising it, and a step-by-step doc showing `init → seed → deploy → run` against it end to end.
 
 **#10 — GitHub Actions CI workflow**
