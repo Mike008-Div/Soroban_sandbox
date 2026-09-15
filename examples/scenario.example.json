@@ -1,0 +1,22 @@
+{
+  "steps": [
+    {
+      "label": "alice transfers 100 to bob",
+      "contract": "token",
+      "as": "alice",
+      "method": "transfer",
+      "args": [
+        { "name": "to", "value": "bob" },
+        { "name": "amount", "value": 100 }
+      ]
+    },
+    {
+      "label": "bob's balance reflects the transfer",
+      "contract": "token",
+      "as": "bob",
+      "method": "balance",
+      "args": [{ "name": "id", "value": "bob" }],
+      "expect": "100"
+    }
+  ]
+}

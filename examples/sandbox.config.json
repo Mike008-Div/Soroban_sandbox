@@ -1,0 +1,6 @@
+{
+  "accounts": [
+    { "name": "alice", "startingBalance": 10000 },
+    { "name": "bob", "startingBalance": 10000 }
+  ]
+}

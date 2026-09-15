@@ -1,0 +1,23 @@
+{
+  "name": "soroban-sandbox",
+  "version": "0.1.0",
+  "description": "Local testing sandbox CLI for Soroban smart contracts on Stellar",
+  "main": "src/index.js",
+  "bin": {
+    "sandbox": "./src/index.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": ["stellar", "soroban", "smart-contracts", "testing", "sandbox", "cli"],
+  "license": "MIT",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^12.0.0",
+    "commander": "^12.0.0",
+    "express": "^4.19.2"
+  }
+}
