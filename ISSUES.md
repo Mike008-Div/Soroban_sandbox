@@ -70,3 +70,6 @@ Package and publish `soroban-sandbox` to npm as a global-installable CLI (`npm i
 **#15 — First-class Soroban Rust contract workflow**
 This is now the primary language/tooling direction for contract development in the repository. The example now uses Soroban `Address` values, authorization, Rust tests, and named-account resolution in scenarios.
 Remaining work: include a standards-compliant token implementation or clearly document the supported Soroban contract interface, and verify the complete Rust build → deploy → invoke flow in CI.
+
+**#16 — Document and validate Windows Rust toolchain setup**
+Add a maintainer-friendly Windows setup check for the Rust contract workflow. Detect or clearly report when Visual Studio Build Tools and the Desktop development with C++ workload are missing, explain that Cargo requires `link.exe`, and validate `cargo test` and the WASM build in CI or a documented supported environment.
