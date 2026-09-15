@@ -1,0 +1,33 @@
+{
+  "steps": [
+    {
+      "label": "initialize alice with 1000 tokens",
+      "contract": "token",
+      "as": "alice",
+      "method": "init",
+      "args": [
+        { "name": "owner", "value": "alice" },
+        { "name": "amount", "value": 1000 }
+      ]
+    },
+    {
+      "label": "alice transfers 100 to bob",
+      "contract": "token",
+      "as": "alice",
+      "method": "transfer",
+      "args": [
+        { "name": "from", "value": "alice" },
+        { "name": "to", "value": "bob" },
+        { "name": "amount", "value": 100 }
+      ]
+    },
+    {
+      "label": "bob's balance reflects the transfer",
+      "contract": "token",
+      "as": "bob",
+      "method": "balance",
+      "args": [{ "name": "id", "value": "bob" }],
+      "expect": "100"
+    }
+  ]
+}

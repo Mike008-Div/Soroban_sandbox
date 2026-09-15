@@ -66,3 +66,7 @@ A small docs site (VitePress or plain static MkDocs) covering installation, comm
 
 **#14 — Publish to npm**
 Package and publish `soroban-sandbox` to npm as a global-installable CLI (`npm i -g soroban-sandbox`), with a release workflow.
+
+**#15 — First-class Soroban Rust contract workflow**
+This is now the primary language/tooling direction for contract development in the repository.
+Expand the current Rust example into a realistic Soroban development workflow. Add a documented command for building Rust contracts to WASM, support contract tests run with `cargo test`, and update the scenario format or account resolution so contracts can use Soroban `Address` values and authorization instead of string account labels. Include a standards-compliant token example or clearly document the supported Soroban contract interface, and verify the complete Rust build → deploy → invoke flow in CI.
