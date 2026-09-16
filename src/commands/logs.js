@@ -16,6 +16,11 @@ export async function logsCommand(options = {}) {
     process.exitCode = 1;
     return;
   }
+  if (!state.containerName) {
+    console.error(`No local container for network "${state.network}" -- there's nothing to tail logs for.`);
+    process.exitCode = 1;
+    return;
+  }
 
   const args = buildLogsArgs(state.containerName, options);
 

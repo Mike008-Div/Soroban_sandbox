@@ -6,22 +6,34 @@ import { createLogger } from "../lib/logger.js";
 const CONTAINER_NAME = "soroban-sandbox-node";
 const IMAGE = "stellar/quickstart:latest";
 const RPC_PORT = 8000;
-const NETWORK_PASSPHRASE = "Standalone Network ; February 2017";
+
+// Public networks need no local container -- just their public RPC and
+// passphrase. Only "standalone" spins up the Docker quickstart image.
+export const REMOTE_NETWORKS = {
+  testnet: {
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    networkPassphrase: "Test SDF Network ; September 2015",
+  },
+  futurenet: {
+    rpcUrl: "https://rpc-futurenet.stellar.org",
+    networkPassphrase: "Test SDF Future Network ; October 2022",
+  },
+};
 
 export async function initCommand(options = {}) {
   const log = createLogger(options);
-  const existing = await readJson(STATE_FILE);
+  const network = options.network || "standalone";
+  if (network !== "standalone" && !REMOTE_NETWORKS[network]) {
+    log.error(`Unknown --network "${network}". Expected one of: standalone, ${Object.keys(REMOTE_NETWORKS).join(", ")}.`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const existing = await readJson(STATE_FILE, null, options.cwd);
   if (existing?.running) {
     log.info(
       `Sandbox already running (container: ${existing.containerName}). Run 'sandbox reset' first if you want a clean one.`
     );
-    return;
-  }
-
-  const hasDocker = await commandExists("docker");
-  if (!hasDocker) {
-    log.error("Docker is required but was not found on PATH. Install Docker and try again.");
-    process.exitCode = 1;
     return;
   }
 
@@ -33,11 +45,24 @@ export async function initCommand(options = {}) {
     return;
   }
 
+  if (network !== "standalone") {
+    await initRemote(network, { retries, delayMs, log, cwd: options.cwd });
+    return;
+  }
+
+  const hasDocker = await commandExists("docker");
+  if (!hasDocker) {
+    log.error("Docker is required but was not found on PATH. Install Docker and try again.");
+    process.exitCode = 1;
+    return;
+  }
+
   log.info(`Starting local Stellar/Soroban node (${IMAGE}) on port ${port}...`);
 
   await run("docker", buildRunArgs(port), { silent: options.quiet });
 
   const rpcUrl = `http://localhost:${port}/soroban/rpc`;
+  const networkPassphrase = "Standalone Network ; February 2017";
   const healthy = await waitForHealthy(rpcUrl, { retries, delayMs });
 
   if (!healthy) {
@@ -55,17 +80,51 @@ export async function initCommand(options = {}) {
     return;
   }
 
-  await writeJson(STATE_FILE, {
-    running: true,
-    containerName: CONTAINER_NAME,
-    rpcUrl,
-    networkPassphrase: NETWORK_PASSPHRASE,
-    startedAt: new Date().toISOString(),
-  });
+  await writeJson(
+    STATE_FILE,
+    {
+      running: true,
+      network,
+      containerName: CONTAINER_NAME,
+      rpcUrl,
+      networkPassphrase,
+      startedAt: new Date().toISOString(),
+    },
+    options.cwd,
+  );
 
-  log.info(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${NETWORK_PASSPHRASE}`);
+  log.info(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${networkPassphrase}`);
   // Not gated by --quiet: this is a security-relevant warning, not noise.
-  await warnIfSandboxDirNotGitignored();
+  await warnIfSandboxDirNotGitignored(options.cwd);
+}
+
+async function initRemote(network, { retries, delayMs, log, cwd }) {
+  const { rpcUrl, networkPassphrase } = REMOTE_NETWORKS[network];
+  log.info(`Connecting to ${network} (${rpcUrl})...`);
+
+  const healthy = await waitForHealthy(rpcUrl, { retries, delayMs });
+  if (!healthy) {
+    const waited = ((retries * delayMs) / 1000).toFixed(0);
+    log.error(`Could not reach ${network} after ${retries} attempts (~${waited}s). Check your network connection.`);
+    process.exitCode = 1;
+    return;
+  }
+
+  await writeJson(
+    STATE_FILE,
+    {
+      running: true,
+      network,
+      containerName: null, // no local container to stop/tail for a remote network
+      rpcUrl,
+      networkPassphrase,
+      startedAt: new Date().toISOString(),
+    },
+    cwd,
+  );
+
+  log.info(`Sandbox is up (${network}).\n  RPC: ${rpcUrl}\n  Network passphrase: ${networkPassphrase}`);
+  await warnIfSandboxDirNotGitignored(cwd);
 }
 
 export function buildRunArgs(port) {
