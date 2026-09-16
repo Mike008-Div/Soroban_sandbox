@@ -1,6 +1,7 @@
 import { run, commandExists } from "../lib/shell.js";
 import { writeJson, readJson, STATE_FILE } from "../lib/state.js";
 import { warnIfSandboxDirNotGitignored } from "../lib/gitignore.js";
+import { createLogger } from "../lib/logger.js";
 
 const CONTAINER_NAME = "soroban-sandbox-node";
 const IMAGE = "stellar/quickstart:latest";
@@ -8,9 +9,10 @@ const RPC_PORT = 8000;
 const NETWORK_PASSPHRASE = "Standalone Network ; February 2017";
 
 export async function initCommand(options = {}) {
+  const log = createLogger(options);
   const existing = await readJson(STATE_FILE);
   if (existing?.running) {
-    console.log(
+    log.info(
       `Sandbox already running (container: ${existing.containerName}). Run 'sandbox reset' first if you want a clean one.`
     );
     return;
@@ -18,7 +20,7 @@ export async function initCommand(options = {}) {
 
   const hasDocker = await commandExists("docker");
   if (!hasDocker) {
-    console.error("Docker is required but was not found on PATH. Install Docker and try again.");
+    log.error("Docker is required but was not found on PATH. Install Docker and try again.");
     process.exitCode = 1;
     return;
   }
@@ -31,16 +33,16 @@ export async function initCommand(options = {}) {
     return;
   }
 
-  console.log(`Starting local Stellar/Soroban node (${IMAGE}) on port ${port}...`);
+  log.info(`Starting local Stellar/Soroban node (${IMAGE}) on port ${port}...`);
 
-  await run("docker", buildRunArgs(port));
+  await run("docker", buildRunArgs(port), { silent: options.quiet });
 
   const rpcUrl = `http://localhost:${port}/soroban/rpc`;
   const healthy = await waitForHealthy(rpcUrl, { retries, delayMs });
 
   if (!healthy) {
     const waited = ((retries * delayMs) / 1000).toFixed(0);
-    console.error(
+    log.error(
       `Node did not become healthy after ${retries} attempts (~${waited}s, ` +
         `--health-retries/--health-delay to adjust). Recent container logs:`,
     );
@@ -48,7 +50,7 @@ export async function initCommand(options = {}) {
       silent: true,
       allowFailure: true,
     });
-    console.error((stdout + stderr).trim() || `  (no logs -- check 'docker logs ${CONTAINER_NAME}' directly)`);
+    log.error((stdout + stderr).trim() || `  (no logs -- check 'docker logs ${CONTAINER_NAME}' directly)`);
     process.exitCode = 1;
     return;
   }
@@ -61,7 +63,8 @@ export async function initCommand(options = {}) {
     startedAt: new Date().toISOString(),
   });
 
-  console.log(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${NETWORK_PASSPHRASE}`);
+  log.info(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${NETWORK_PASSPHRASE}`);
+  // Not gated by --quiet: this is a security-relevant warning, not noise.
   await warnIfSandboxDirNotGitignored();
 }
 

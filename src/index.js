@@ -22,6 +22,7 @@ program
   .option("--health-retries <n>", "health-check attempts before giving up (default 30)")
   .option("--health-delay <ms>", "milliseconds between health-check attempts (default 2000)")
   .option("--port <port>", "local RPC/host port to use, if 8000 is already taken (default 8000)")
+  .option("-q, --quiet", "suppress non-error output (for scripts/CI)")
   .action(initCommand);
 
 program
@@ -29,6 +30,7 @@ program
   .description("Create and fund test accounts from a config file")
   .option("-c, --config <path>", "path to seed config JSON", "sandbox.config.json")
   .option("--retries <n>", "friendbot retry attempts after the first try (default 3)")
+  .option("-q, --quiet", "suppress non-error output (for scripts/CI)")
   .action(seedCommand);
 
 program
@@ -36,11 +38,13 @@ program
   .description("Deploy a compiled contract WASM to the sandbox")
   .option("--as <accountName>", "account to deploy from (defaults to first seeded account)")
   .option("--name <contractName>", "name to register the contract under (defaults to wasm filename)")
+  .option("-q, --quiet", "suppress non-error output (for scripts/CI)")
   .action(deployCommand);
 
 program
   .command("run <scenarioPath>")
   .description("Run a scripted scenario of contract calls")
+  .option("-q, --quiet", "suppress [PASS] lines and the summary; [FAIL] lines still print")
   .action(runCommand);
 
 program
