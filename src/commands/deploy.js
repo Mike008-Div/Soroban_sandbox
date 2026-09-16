@@ -34,6 +34,15 @@ export function validateWasmPath(wasmPath) {
   return { valid: true, resolvedPath: resolved };
 }
 
+// Stellar StrKey contract address: "C" + 55 base32 characters.
+const CONTRACT_ID_PATTERN = /^C[A-Z2-7]{55}$/;
+
+/** Pulls the contract id out of `soroban contract deploy`'s stdout, or returns null if it doesn't look like one. */
+export function extractContractId(stdout) {
+  const lastLine = stdout.trim().split("\n").pop() || "";
+  return CONTRACT_ID_PATTERN.test(lastLine) ? lastLine : null;
+}
+
 export async function deployCommand(wasmPath, options = {}) {
   const validation = validateWasmPath(wasmPath);
   if (!validation.valid) {
@@ -61,19 +70,34 @@ export async function deployCommand(wasmPath, options = {}) {
 
   console.log(`Deploying ${wasmPath} as ${deployerName}...`);
 
-  const { stdout } = await run(
-    "soroban",
-    [
-      "contract", "deploy",
-      "--wasm", path.resolve(wasmPath),
-      "--source", deployer.secret,
-      "--rpc-url", state.rpcUrl,
-      "--network-passphrase", state.networkPassphrase,
-    ],
-    { silent: true }
-  );
+  let stdout;
+  try {
+    ({ stdout } = await run(
+      "soroban",
+      [
+        "contract", "deploy",
+        "--wasm", path.resolve(wasmPath),
+        "--source", deployer.secret,
+        "--rpc-url", state.rpcUrl,
+        "--network-passphrase", state.networkPassphrase,
+      ],
+      { silent: true }
+    ));
+  } catch (err) {
+    // Nothing written to contracts.json -- state is unchanged.
+    console.error(`Deploy failed:\n${err.message}`);
+    process.exitCode = 1;
+    return;
+  }
 
-  const contractId = stdout.trim().split("\n").pop();
+  const contractId = extractContractId(stdout);
+  if (!contractId) {
+    // The CLI exited 0 but didn't print something that looks like a
+    // contract id -- don't guess, and don't record a bad entry.
+    console.error(`Deploy did not produce a recognizable contract id. Raw output:\n${stdout.trim()}`);
+    process.exitCode = 1;
+    return;
+  }
 
   const contracts = await readJson(CONTRACTS_FILE, {});
   const name = options.name || path.basename(wasmPath, ".wasm");
