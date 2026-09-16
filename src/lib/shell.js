@@ -23,6 +23,19 @@ export function redactText(text) {
   return text.replace(/\bS[A-Z2-7]{55}\b/g, "[REDACTED]");
 }
 
+// Child processes currently in flight, so a SIGINT/SIGTERM handler can kill
+// them instead of leaving them orphaned when only the parent Node process
+// receives the signal (the usual case outside an interactive terminal --
+// e.g. under a process manager or `docker compose`-style supervisor).
+const activeChildren = new Set();
+
+/** Sends `signal` to every currently in-flight child process spawned via run(). */
+export function killActiveChildren(signal = "SIGTERM") {
+  for (const child of activeChildren) {
+    child.kill(signal);
+  }
+}
+
 /**
  * Run a shell command, streaming output to the console (unless silent),
  * and resolve with { code, stdout, stderr }. Rejects on non-zero exit
@@ -35,6 +48,7 @@ export function run(cmd, args = [], { cwd, silent = false, allowFailure = false,
       env: { ...process.env, ...env },
       shell: process.platform === "win32",
     });
+    activeChildren.add(child);
 
     let stdout = "";
     let stderr = "";
@@ -49,9 +63,13 @@ export function run(cmd, args = [], { cwd, silent = false, allowFailure = false,
       if (!silent) process.stderr.write(chunk);
     });
 
-    child.on("error", (err) => reject(err));
+    child.on("error", (err) => {
+      activeChildren.delete(child);
+      reject(err);
+    });
 
     child.on("close", (code) => {
+      activeChildren.delete(child);
       if (code !== 0 && !allowFailure) {
         reject(
           new Error(`Command failed (exit ${code}): ${cmd} ${redactArgs(args).join(" ")}\n${redactText(stderr)}`),

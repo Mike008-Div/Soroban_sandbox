@@ -8,6 +8,16 @@ import { resetCommand } from "./commands/reset.js";
 import { statusCommand } from "./commands/status.js";
 import { uiCommand } from "./commands/ui.js";
 import { logsCommand } from "./commands/logs.js";
+import { killActiveChildren } from "./lib/shell.js";
+import { registerShutdownHandler } from "./lib/shutdown.js";
+
+// Ensures a command like `sandbox logs` (which streams `docker logs -f`
+// indefinitely) doesn't leave that child process orphaned if this process
+// is killed by something other than an interactive terminal's Ctrl+C,
+// which normally signals the whole process group for you.
+registerShutdownHandler((signal) => {
+  killActiveChildren(signal);
+});
 
 const program = new Command();
 
