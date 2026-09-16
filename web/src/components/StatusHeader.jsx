@@ -1,8 +1,8 @@
 export default function StatusHeader({ status }) {
   const running = status?.running;
   return (
-    <div className="panel">
-      <h2>Sandbox Node</h2>
+    <section className="panel" aria-labelledby="status-heading">
+      <h2 id="status-heading">Sandbox Node</h2>
       {running ? (
         <>
           <div className="row">
@@ -31,6 +31,6 @@ export default function StatusHeader({ status }) {
           <p className="empty">Run <code>sandbox init</code> in your terminal to start a local node.</p>
         </>
       )}
-    </div>
+    </section>
   );
 }
