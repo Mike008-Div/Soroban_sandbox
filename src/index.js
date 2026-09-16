@@ -8,6 +8,7 @@ import { resetCommand } from "./commands/reset.js";
 import { statusCommand } from "./commands/status.js";
 import { uiCommand } from "./commands/ui.js";
 import { logsCommand } from "./commands/logs.js";
+import { contractsCommand } from "./commands/contracts.js";
 import { killActiveChildren } from "./lib/shell.js";
 import { registerShutdownHandler } from "./lib/shutdown.js";
 
@@ -70,6 +71,12 @@ program
   .description("Start the local web dashboard (accounts, contracts, scenario runner)")
   .option("-p, --port <port>", "port to serve on", "4545")
   .action(uiCommand);
+
+program
+  .command("contracts [name]")
+  .description("List recorded contracts, or inspect one (wasm hash + interface) via RPC")
+  .option("--json", "print as JSON instead of formatted output")
+  .action(contractsCommand);
 
 program
   .command("logs")
