@@ -3,17 +3,17 @@ import path from "path";
 
 const SANDBOX_DIR = ".sandbox";
 
-function filePath(name) {
-  return path.join(process.cwd(), SANDBOX_DIR, name);
+function filePath(name, cwd) {
+  return path.join(cwd, SANDBOX_DIR, name);
 }
 
-async function ensureDir() {
-  await fs.mkdir(path.join(process.cwd(), SANDBOX_DIR), { recursive: true });
+async function ensureDir(cwd) {
+  await fs.mkdir(path.join(cwd, SANDBOX_DIR), { recursive: true });
 }
 
-export async function readJson(name, fallback = null) {
+export async function readJson(name, fallback = null, cwd = process.cwd()) {
   try {
-    const raw = await fs.readFile(filePath(name), "utf-8");
+    const raw = await fs.readFile(filePath(name, cwd), "utf-8");
     return JSON.parse(raw);
   } catch (err) {
     if (err.code === "ENOENT") return fallback;
@@ -21,13 +21,13 @@ export async function readJson(name, fallback = null) {
   }
 }
 
-export async function writeJson(name, data) {
-  await ensureDir();
-  await fs.writeFile(filePath(name), JSON.stringify(data, null, 2));
+export async function writeJson(name, data, cwd = process.cwd()) {
+  await ensureDir(cwd);
+  await fs.writeFile(filePath(name, cwd), JSON.stringify(data, null, 2));
 }
 
-export async function clearState() {
-  await fs.rm(path.join(process.cwd(), SANDBOX_DIR), { recursive: true, force: true });
+export async function clearState(cwd = process.cwd()) {
+  await fs.rm(path.join(cwd, SANDBOX_DIR), { recursive: true, force: true });
 }
 
 export async function sandboxDirExists(cwd = process.cwd()) {
