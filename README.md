@@ -1,5 +1,7 @@
 # Soroban Sandbox
 
+[![CI](https://github.com/Mike008-Div/Soroban_sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/Mike008-Div/Soroban_sandbox/actions/workflows/ci.yml)
+
 A local testing sandbox for **Soroban** (Stellar's smart contract platform). Use the Node.js CLI and React dashboard to run a disposable local network, seed funded test accounts, deploy Rust contracts compiled to WASM, and execute scripted scenarios without touching public Testnet.
 
 ## What this project contains

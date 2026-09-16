@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unit-tests:
+    name: Unit tests (CLI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  contract:
+    name: Example contract (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: examples/contracts/token
+      - run: npm run contract:test
+      - run: npm run contract:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sandbox-token-wasm
+          path: examples/contracts/token/target/wasm32-unknown-unknown/release/sandbox_token.wasm
+          if-no-files-found: error
+
+  # Runs the full init -> seed -> deploy -> run -> reset lifecycle
+  # (integration/lifecycle.js) against a real local Docker node, on every
+  # PR, as requested by #14. Copy this job (and the Stellar CLI install
+  # step) into another Soroban project's CI to get the same coverage.
+  integration:
+    name: Full lifecycle integration test (Docker)
+    runs-on: ubuntu-latest
+    needs: contract
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: sandbox-token-wasm
+          path: examples/contracts/token/target/wasm32-unknown-unknown/release
+      - name: Install the Stellar CLI
+        # The project's commands still invoke the binary by its pre-rename
+        # name ("soroban"); alias it until that's updated (tracked
+        # separately). ubuntu-latest ships Docker already, which `init`
+        # needs.
+        run: |
+          cargo install --locked stellar-cli
+          sudo ln -s "$(command -v stellar)" /usr/local/bin/soroban
+      - run: npm run test:integration
