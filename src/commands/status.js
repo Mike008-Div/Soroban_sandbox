@@ -14,6 +14,7 @@ export async function getStatus(cwd = process.cwd()) {
 
   return {
     running: true,
+    network: state.network || "standalone",
     containerName: state.containerName,
     rpcUrl: state.rpcUrl,
     networkPassphrase: state.networkPassphrase,
@@ -36,7 +37,9 @@ export async function statusCommand(options = {}) {
     return;
   }
 
-  console.log(`Sandbox running (container: ${status.containerName})`);
+  console.log(
+    `Sandbox running (network: ${status.network}${status.containerName ? `, container: ${status.containerName}` : ""})`,
+  );
   console.log(`  RPC:        ${status.rpcUrl}`);
   console.log(`  Passphrase: ${status.networkPassphrase}`);
   console.log(`  Started:    ${status.startedAt}`);

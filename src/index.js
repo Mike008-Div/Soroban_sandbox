@@ -34,6 +34,7 @@ program
   .option("--health-retries <n>", "health-check attempts before giving up (default 30)")
   .option("--health-delay <ms>", "milliseconds between health-check attempts (default 2000)")
   .option("--port <port>", "local RPC/host port to use, if 8000 is already taken (default 8000)")
+  .option("--network <name>", "standalone (default, local Docker node), testnet, or futurenet")
   .option("-q, --quiet", "suppress non-error output (for scripts/CI)")
   .action(initCommand);
 
