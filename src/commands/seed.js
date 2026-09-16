@@ -16,7 +16,7 @@ export async function fundAccount(friendbotUrl, publicKey) {
 
 export async function seedCommand(options) {
   const log = createLogger(options);
-  const state = await readJson(STATE_FILE);
+  const state = await readJson(STATE_FILE, null, options.cwd);
   if (!state?.running) {
     log.error("No running sandbox found. Run `sandbox init` first.");
     process.exitCode = 1;
@@ -68,7 +68,7 @@ export async function seedCommand(options) {
     };
   }
 
-  await writeJson(ACCOUNTS_FILE, results);
+  await writeJson(ACCOUNTS_FILE, results, options.cwd);
   log.info(`Seeded ${accounts.length} account(s). Keys saved to .sandbox/${ACCOUNTS_FILE} (gitignored — never commit this).`);
-  await warnIfSandboxDirNotGitignored();
+  await warnIfSandboxDirNotGitignored(options.cwd);
 }
