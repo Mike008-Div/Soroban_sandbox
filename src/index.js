@@ -7,6 +7,7 @@ import { runCommand } from "./commands/run.js";
 import { resetCommand } from "./commands/reset.js";
 import { statusCommand } from "./commands/status.js";
 import { uiCommand } from "./commands/ui.js";
+import { logsCommand } from "./commands/logs.js";
 
 const program = new Command();
 
@@ -48,6 +49,13 @@ program
   .description("Start the local web dashboard (accounts, contracts, scenario runner)")
   .option("-p, --port <port>", "port to serve on", "4545")
   .action(uiCommand);
+
+program
+  .command("logs")
+  .description("Tail logs from the running sandbox container")
+  .option("--no-follow", "print current logs and exit, instead of streaming")
+  .option("--tail <lines>", "number of recent lines to show before following")
+  .action(logsCommand);
 
 program
   .command("reset")
