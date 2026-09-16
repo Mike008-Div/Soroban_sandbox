@@ -9,6 +9,7 @@ import { statusCommand } from "./commands/status.js";
 import { uiCommand } from "./commands/ui.js";
 import { logsCommand } from "./commands/logs.js";
 import { contractsCommand } from "./commands/contracts.js";
+import { completionCommand } from "./commands/completion.js";
 import { killActiveChildren } from "./lib/shell.js";
 import { registerShutdownHandler } from "./lib/shutdown.js";
 
@@ -90,5 +91,10 @@ program
   .description("Tear down and restart a clean sandbox")
   .option("--dry-run", "print what would be done without changing anything")
   .action(resetCommand);
+
+program
+  .command("completion <shell>")
+  .description("Print a shell completion script (bash, zsh, or powershell)")
+  .action(completionCommand);
 
 program.parse();
