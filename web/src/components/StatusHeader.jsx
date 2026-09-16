@@ -1,9 +1,26 @@
-export default function StatusHeader({ status }) {
+export default function StatusHeader({ status, loading, error }) {
+  if (loading) {
+    return (
+      <div className="panel">
+        <h2>Sandbox Node</h2>
+        <p className="empty">Loading node status...</p>
+      </div>
+    );
+  }
+
   const running = status?.running;
   return (
     <section className="panel" aria-labelledby="status-heading">
       <h2 id="status-heading">Sandbox Node</h2>
-      {running ? (
+      {error && !status ? (
+        <>
+          <div className="row">
+            <span>Status</span>
+            <span className="badge stopped">unavailable</span>
+          </div>
+          <p className="empty">Cannot determine node status while API is unreachable.</p>
+        </>
+      ) : running ? (
         <>
           <div className="row">
             <span>Status</span>
