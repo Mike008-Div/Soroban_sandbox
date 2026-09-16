@@ -1,6 +1,7 @@
 import { Keypair } from "@stellar/stellar-sdk";
 import { promises as fs } from "fs";
 import { readJson, writeJson, STATE_FILE, ACCOUNTS_FILE } from "../lib/state.js";
+import { warnIfSandboxDirNotGitignored } from "../lib/gitignore.js";
 
 export async function seedCommand(options) {
   const state = await readJson(STATE_FILE);
@@ -52,4 +53,5 @@ export async function seedCommand(options) {
 
   await writeJson(ACCOUNTS_FILE, results);
   console.log(`Seeded ${accounts.length} account(s). Keys saved to .sandbox/${ACCOUNTS_FILE} (gitignored — never commit this).`);
+  await warnIfSandboxDirNotGitignored();
 }

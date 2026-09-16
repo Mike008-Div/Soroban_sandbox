@@ -1,5 +1,6 @@
 import { run, commandExists } from "../lib/shell.js";
 import { writeJson, readJson, STATE_FILE } from "../lib/state.js";
+import { warnIfSandboxDirNotGitignored } from "../lib/gitignore.js";
 
 const CONTAINER_NAME = "soroban-sandbox-node";
 const IMAGE = "stellar/quickstart:latest";
@@ -51,6 +52,7 @@ export async function initCommand() {
   });
 
   console.log(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${NETWORK_PASSPHRASE}`);
+  await warnIfSandboxDirNotGitignored();
 }
 
 async function waitForHealthy(rpcUrl, { retries = 30, delayMs = 2000 } = {}) {
