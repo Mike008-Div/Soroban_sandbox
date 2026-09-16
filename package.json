@@ -14,7 +14,8 @@
     "start": "node src/index.js",
     "contract:build": "cargo build --manifest-path examples/contracts/token/Cargo.toml --target wasm32-unknown-unknown --release",
     "contract:test": "cargo test --manifest-path examples/contracts/token/Cargo.toml",
-    "test": "node --test"
+    "test": "node --test",
+    "test:integration": "node --test integration/lifecycle.js"
   },
   "keywords": [
     "stellar",
