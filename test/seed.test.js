@@ -1,13 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fundAccount } from "../src/commands/seed.js";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { fundAccount, seedCommand } from "../src/commands/seed.js";
 import { withRetry } from "../src/lib/retry.js";
-
-// Tests fundAccount + withRetry directly (how seedCommand wires them)
-// rather than exercising seedCommand end to end, which would need
-// process.chdir() into a fake project -- chdir mutates process-global
-// state that other test files running concurrently also depend on, and
-// that caused real intermittent failures elsewhere in this suite.
 
 function withMockedFetch(impl, fn) {
   const original = globalThis.fetch;
@@ -58,4 +55,65 @@ test("seed's retry wiring gives up and throws once retries are exhausted", async
     /500/,
   );
   assert.equal(calls, 3); // first try + 2 retries
+});
+
+function setupSandbox(dir) {
+  fs.mkdirSync(path.join(dir, ".sandbox"));
+  fs.writeFileSync(
+    path.join(dir, ".sandbox", "state.json"),
+    JSON.stringify({ running: true, rpcUrl: "http://localhost:8000/soroban/rpc" }),
+  );
+}
+
+test("seedCommand end to end: writes accounts.json with the seeded keys", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "soroban-seed-e2e-"));
+  try {
+    setupSandbox(dir);
+    const configPath = path.join(dir, "sandbox.config.json");
+    fs.writeFileSync(configPath, JSON.stringify({ accounts: [{ name: "alice" }, { name: "bob", startingBalance: 5000 }] }));
+
+    await withMockedFetch(async () => ({ ok: true, status: 200 }), () =>
+      seedCommand({ config: configPath, cwd: dir }),
+    );
+
+    const accounts = JSON.parse(fs.readFileSync(path.join(dir, ".sandbox", "accounts.json"), "utf-8"));
+    assert.ok(accounts.alice.publicKey);
+    assert.ok(accounts.alice.secret);
+    assert.equal(accounts.alice.startingBalance, 10000);
+    assert.equal(accounts.bob.startingBalance, 5000);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("seedCommand fails cleanly on an invalid config, writing nothing", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "soroban-seed-e2e-"));
+  try {
+    setupSandbox(dir);
+    const configPath = path.join(dir, "sandbox.config.json");
+    fs.writeFileSync(configPath, JSON.stringify({ accounts: [{ startingBalance: 100 }] })); // missing "name"
+
+    await seedCommand({ config: configPath, cwd: dir });
+
+    assert.equal(fs.existsSync(path.join(dir, ".sandbox", "accounts.json")), false);
+    assert.equal(process.exitCode, 1);
+  } finally {
+    process.exitCode = 0;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("seedCommand fails cleanly when no sandbox is running", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "soroban-seed-e2e-"));
+  try {
+    const configPath = path.join(dir, "sandbox.config.json");
+    fs.writeFileSync(configPath, JSON.stringify({ accounts: [{ name: "alice" }] }));
+
+    await seedCommand({ config: configPath, cwd: dir });
+
+    assert.equal(process.exitCode, 1);
+  } finally {
+    process.exitCode = 0;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

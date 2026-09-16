@@ -63,13 +63,13 @@ export async function deployCommand(wasmPath, options = {}) {
     return;
   }
 
-  const state = await readJson(STATE_FILE);
+  const state = await readJson(STATE_FILE, null, options.cwd);
   if (!state?.running) {
     fail("No running sandbox found. Run `sandbox init` first.");
     return;
   }
 
-  const accounts = await readJson(ACCOUNTS_FILE, {});
+  const accounts = await readJson(ACCOUNTS_FILE, {}, options.cwd);
   const deployerName = options.as || Object.keys(accounts)[0];
   const deployer = accounts[deployerName];
 
@@ -107,7 +107,7 @@ export async function deployCommand(wasmPath, options = {}) {
     return;
   }
 
-  const contracts = await readJson(CONTRACTS_FILE, {});
+  const contracts = await readJson(CONTRACTS_FILE, {}, options.cwd);
   const name = options.name || path.basename(wasmPath, ".wasm");
   const entry = {
     contractId,
@@ -116,7 +116,7 @@ export async function deployCommand(wasmPath, options = {}) {
     deployedAt: new Date().toISOString(),
   };
   contracts[name] = entry;
-  await writeJson(CONTRACTS_FILE, contracts);
+  await writeJson(CONTRACTS_FILE, contracts, options.cwd);
 
   if (options.json) {
     console.log(JSON.stringify({ success: true, name, ...entry }, null, 2));
