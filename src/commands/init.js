@@ -25,23 +25,17 @@ export async function initCommand(options = {}) {
 
   const retries = parsePositiveInt(options.healthRetries, 30, "--health-retries");
   const delayMs = parsePositiveInt(options.healthDelay, 2000, "--health-delay");
-  if (retries === undefined || delayMs === undefined) {
+  const port = parsePositiveInt(options.port, RPC_PORT, "--port");
+  if (retries === undefined || delayMs === undefined || port === undefined) {
     process.exitCode = 1;
     return;
   }
 
-  console.log(`Starting local Stellar/Soroban node (${IMAGE})...`);
+  console.log(`Starting local Stellar/Soroban node (${IMAGE}) on port ${port}...`);
 
-  await run("docker", [
-    "run", "-d", "--rm",
-    "--name", CONTAINER_NAME,
-    "-p", `${RPC_PORT}:8000`,
-    IMAGE,
-    "--standalone",
-    "--enable-soroban-rpc",
-  ]);
+  await run("docker", buildRunArgs(port));
 
-  const rpcUrl = `http://localhost:${RPC_PORT}/soroban/rpc`;
+  const rpcUrl = `http://localhost:${port}/soroban/rpc`;
   const healthy = await waitForHealthy(rpcUrl, { retries, delayMs });
 
   if (!healthy) {
@@ -69,6 +63,17 @@ export async function initCommand(options = {}) {
 
   console.log(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${NETWORK_PASSPHRASE}`);
   await warnIfSandboxDirNotGitignored();
+}
+
+export function buildRunArgs(port) {
+  return [
+    "run", "-d", "--rm",
+    "--name", CONTAINER_NAME,
+    "-p", `${port}:8000`,
+    IMAGE,
+    "--standalone",
+    "--enable-soroban-rpc",
+  ];
 }
 
 /** Parses a CLI option into a positive integer, or logs an error and returns undefined. */
