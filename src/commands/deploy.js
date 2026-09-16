@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { run } from "../lib/shell.js";
 import { readJson, writeJson, STATE_FILE, ACCOUNTS_FILE, CONTRACTS_FILE } from "../lib/state.js";
+import { createLogger } from "../lib/logger.js";
 
 export function validateWasmPath(wasmPath) {
   if (!wasmPath || typeof wasmPath !== "string") {
@@ -44,16 +45,17 @@ export function extractContractId(stdout) {
 }
 
 export async function deployCommand(wasmPath, options = {}) {
+  const log = createLogger(options);
   const validation = validateWasmPath(wasmPath);
   if (!validation.valid) {
-    console.error(validation.error);
+    log.error(validation.error);
     process.exitCode = 1;
     return;
   }
 
   const state = await readJson(STATE_FILE);
   if (!state?.running) {
-    console.error("No running sandbox found. Run `sandbox init` first.");
+    log.error("No running sandbox found. Run `sandbox init` first.");
     process.exitCode = 1;
     return;
   }
@@ -63,12 +65,12 @@ export async function deployCommand(wasmPath, options = {}) {
   const deployer = accounts[deployerName];
 
   if (!deployer) {
-    console.error(`No account named "${deployerName}" found. Run \`sandbox seed\` first, or pass --as <name>.`);
+    log.error(`No account named "${deployerName}" found. Run \`sandbox seed\` first, or pass --as <name>.`);
     process.exitCode = 1;
     return;
   }
 
-  console.log(`Deploying ${wasmPath} as ${deployerName}...`);
+  log.info(`Deploying ${wasmPath} as ${deployerName}...`);
 
   let stdout;
   try {
@@ -85,7 +87,7 @@ export async function deployCommand(wasmPath, options = {}) {
     ));
   } catch (err) {
     // Nothing written to contracts.json -- state is unchanged.
-    console.error(`Deploy failed:\n${err.message}`);
+    log.error(`Deploy failed:\n${err.message}`);
     process.exitCode = 1;
     return;
   }
@@ -94,7 +96,7 @@ export async function deployCommand(wasmPath, options = {}) {
   if (!contractId) {
     // The CLI exited 0 but didn't print something that looks like a
     // contract id -- don't guess, and don't record a bad entry.
-    console.error(`Deploy did not produce a recognizable contract id. Raw output:\n${stdout.trim()}`);
+    log.error(`Deploy did not produce a recognizable contract id. Raw output:\n${stdout.trim()}`);
     process.exitCode = 1;
     return;
   }
@@ -109,5 +111,5 @@ export async function deployCommand(wasmPath, options = {}) {
   };
   await writeJson(CONTRACTS_FILE, contracts);
 
-  console.log(`Deployed. Contract "${name}" -> ${contractId}`);
+  log.info(`Deployed. Contract "${name}" -> ${contractId}`);
 }
