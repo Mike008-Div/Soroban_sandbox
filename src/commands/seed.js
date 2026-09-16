@@ -5,6 +5,7 @@ import { warnIfSandboxDirNotGitignored } from "../lib/gitignore.js";
 import { withRetry } from "../lib/retry.js";
 import { parsePositiveInt } from "./init.js";
 import { createLogger } from "../lib/logger.js";
+import { validateConfig } from "../lib/validate.js";
 
 export async function fundAccount(friendbotUrl, publicKey) {
   const res = await fetch(`${friendbotUrl}?addr=${encodeURIComponent(publicKey)}`);
@@ -32,12 +33,14 @@ export async function seedCommand(options) {
     return;
   }
 
-  const accounts = config.accounts || [];
-  if (accounts.length === 0) {
-    log.error(`No accounts defined in ${options.config}. Expected: { "accounts": [{ "name": "alice" }] }`);
+  const validation = validateConfig(config);
+  if (!validation.valid) {
+    log.error(`Invalid config at ${options.config}:\n  - ${validation.errors.join("\n  - ")}`);
     process.exitCode = 1;
     return;
   }
+
+  const accounts = config.accounts;
 
   const retries = parsePositiveInt(options.retries, 3, "--retries");
   if (retries === undefined) {
