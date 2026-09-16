@@ -19,12 +19,15 @@ program
 program
   .command("init")
   .description("Spin up a local Soroban/Stellar network")
+  .option("--health-retries <n>", "health-check attempts before giving up (default 30)")
+  .option("--health-delay <ms>", "milliseconds between health-check attempts (default 2000)")
   .action(initCommand);
 
 program
   .command("seed")
   .description("Create and fund test accounts from a config file")
   .option("-c, --config <path>", "path to seed config JSON", "sandbox.config.json")
+  .option("--retries <n>", "friendbot retry attempts after the first try (default 3)")
   .action(seedCommand);
 
 program
