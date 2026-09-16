@@ -30,6 +30,15 @@ export async function clearState() {
   await fs.rm(path.join(process.cwd(), SANDBOX_DIR), { recursive: true, force: true });
 }
 
+export async function sandboxDirExists(cwd = process.cwd()) {
+  try {
+    await fs.access(path.join(cwd, SANDBOX_DIR));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const STATE_FILE = "state.json";
 export const ACCOUNTS_FILE = "accounts.json";
 export const CONTRACTS_FILE = "contracts.json";

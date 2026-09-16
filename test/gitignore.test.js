@@ -5,10 +5,13 @@ import path from "node:path";
 import os from "node:os";
 import { isSandboxDirGitignored } from "../src/lib/gitignore.js";
 
-function withTmpDir(fn) {
+async function withTmpDir(fn) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "soroban-gitignore-test-"));
   try {
-    return fn(dir);
+    // Must await: fn is async, and without this the finally below deletes
+    // the directory before fn's body (writeFileSync + the actual check)
+    // has run, racing the assertion against its own cleanup.
+    return await fn(dir);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

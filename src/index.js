@@ -60,6 +60,7 @@ program
 program
   .command("reset")
   .description("Tear down and restart a clean sandbox")
+  .option("--dry-run", "print what would be done without changing anything")
   .action(resetCommand);
 
 program.parse();
