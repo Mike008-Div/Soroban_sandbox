@@ -7,7 +7,7 @@ const IMAGE = "stellar/quickstart:latest";
 const RPC_PORT = 8000;
 const NETWORK_PASSPHRASE = "Standalone Network ; February 2017";
 
-export async function initCommand() {
+export async function initCommand(options = {}) {
   const existing = await readJson(STATE_FILE);
   if (existing?.running) {
     console.log(
@@ -19,6 +19,13 @@ export async function initCommand() {
   const hasDocker = await commandExists("docker");
   if (!hasDocker) {
     console.error("Docker is required but was not found on PATH. Install Docker and try again.");
+    process.exitCode = 1;
+    return;
+  }
+
+  const retries = parsePositiveInt(options.healthRetries, 30, "--health-retries");
+  const delayMs = parsePositiveInt(options.healthDelay, 2000, "--health-delay");
+  if (retries === undefined || delayMs === undefined) {
     process.exitCode = 1;
     return;
   }
@@ -35,10 +42,19 @@ export async function initCommand() {
   ]);
 
   const rpcUrl = `http://localhost:${RPC_PORT}/soroban/rpc`;
-  const healthy = await waitForHealthy(rpcUrl);
+  const healthy = await waitForHealthy(rpcUrl, { retries, delayMs });
 
   if (!healthy) {
-    console.error(`Node did not become healthy in time. Check 'docker logs ${CONTAINER_NAME}'.`);
+    const waited = ((retries * delayMs) / 1000).toFixed(0);
+    console.error(
+      `Node did not become healthy after ${retries} attempts (~${waited}s, ` +
+        `--health-retries/--health-delay to adjust). Recent container logs:`,
+    );
+    const { stdout, stderr } = await run("docker", ["logs", "--tail", "30", CONTAINER_NAME], {
+      silent: true,
+      allowFailure: true,
+    });
+    console.error((stdout + stderr).trim() || `  (no logs -- check 'docker logs ${CONTAINER_NAME}' directly)`);
     process.exitCode = 1;
     return;
   }
@@ -53,6 +69,17 @@ export async function initCommand() {
 
   console.log(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${NETWORK_PASSPHRASE}`);
   await warnIfSandboxDirNotGitignored();
+}
+
+/** Parses a CLI option into a positive integer, or logs an error and returns undefined. */
+export function parsePositiveInt(value, defaultValue, flagName) {
+  if (value === undefined) return defaultValue;
+  const n = Number(value);
+  if (!Number.isInteger(n) || n <= 0) {
+    console.error(`${flagName} must be a positive integer, got "${value}".`);
+    return undefined;
+  }
+  return n;
 }
 
 async function waitForHealthy(rpcUrl, { retries = 30, delayMs = 2000 } = {}) {
