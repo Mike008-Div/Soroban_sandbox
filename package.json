@@ -1,7 +1,7 @@
 {
   "name": "soroban-sandbox",
   "version": "0.1.0",
-  "description": "Local testing sandbox CLI for Soroban smart contracts on Stellar",
+  "description": "Local testing sandbox for Soroban smart contracts, with a Node.js CLI and Rust contract examples on Stellar",
   "main": "src/index.js",
   "bin": {
     "sandbox": "./src/index.js"
@@ -11,9 +11,11 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "contract:build": "cargo build --manifest-path examples/contracts/token/Cargo.toml --target wasm32-unknown-unknown --release",
+    "contract:test": "cargo test --manifest-path examples/contracts/token/Cargo.toml"
   },
-  "keywords": ["stellar", "soroban", "smart-contracts", "testing", "sandbox", "cli"],
+  "keywords": ["stellar", "soroban", "smart-contracts", "rust", "wasm", "testing", "sandbox", "cli"],
   "license": "MIT",
   "dependencies": {
     "@stellar/stellar-sdk": "^12.0.0",

@@ -47,8 +47,8 @@ A test (can be a shell script or JS) that runs `init → seed → deploy → run
 **#8 — `--json` output mode**
 Add a global `--json` flag so `status`, `deploy`, and `run` can emit machine-readable output instead of formatted console logs, for use in other tooling/CI.
 
-**#9 — Example contract + walkthrough**
-Add a minimal example Soroban token contract (Rust) under `examples/contracts/`, plus a scenario file exercising it, and a step-by-step doc showing `init → seed → deploy → run` against it end to end.
+**#9 — Example contract + walkthrough** — implemented
+The repository includes a minimal example Soroban token contract (Rust) under `examples/contracts/`, a scenario file exercising it, and a step-by-step doc showing `init → seed → deploy → run` against it end to end.
 
 **#10 — GitHub Actions CI workflow**
 A `.github/workflows/ci.yml` that runs the full lifecycle from #7 in CI on every PR — both validates the tool and serves as a copyable template for other Soroban repos.
@@ -66,3 +66,16 @@ A small docs site (VitePress or plain static MkDocs) covering installation, comm
 
 **#14 — Publish to npm**
 Package and publish `soroban-sandbox` to npm as a global-installable CLI (`npm i -g soroban-sandbox`), with a release workflow.
+
+**#15 — First-class Soroban Rust contract workflow**
+This is now the primary language/tooling direction for contract development in the repository. The example now uses Soroban `Address` values, authorization, Rust tests, and named-account resolution in scenarios.
+Remaining work: include a standards-compliant token implementation or clearly document the supported Soroban contract interface, and verify the complete Rust build → deploy → invoke flow in CI.
+
+**#16 — Document and validate Windows Rust toolchain setup (good first issue)**
+Help contributors run the Rust contract workflow on Windows. Detect or clearly report when Visual Studio Build Tools and the Desktop development with C++ workload are missing, explain that Cargo requires `link.exe`, and validate `cargo test` and the WASM build in CI or a documented supported environment.
+
+Acceptance criteria:
+
+- The setup guide explains how to install the required Windows C++ workload.
+- A useful error or diagnostic identifies a missing `link.exe`.
+- `npm run contract:test` and `npm run contract:build` are verified in a supported environment or CI.

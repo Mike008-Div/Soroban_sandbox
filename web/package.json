@@ -1,6 +1,7 @@
 {
   "name": "soroban-sandbox-dashboard",
   "version": "0.1.0",
+  "description": "React dashboard for the Soroban Sandbox Rust and Node.js development workflow",
   "private": true,
   "type": "module",
   "scripts": {

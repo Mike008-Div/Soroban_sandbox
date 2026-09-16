@@ -1,6 +1,12 @@
 # Soroban Sandbox
 
-A local testing sandbox for **Soroban** (Stellar's smart contract platform) — spin up a disposable local network, seed funded test accounts, deploy contracts, and run scripted scenarios, all without touching public Testnet.
+A local testing sandbox for **Soroban** (Stellar's smart contract platform). Use the Node.js CLI and React dashboard to run a disposable local network, seed funded test accounts, deploy Rust contracts compiled to WASM, and execute scripted scenarios without touching public Testnet.
+
+## What this project contains
+
+- **Rust**: Soroban smart contracts under `examples/contracts/`, compiled to WebAssembly.
+- **Node.js**: CLI, local network orchestration, deployment, and scenario execution.
+- **React**: Optional dashboard for inspecting the sandbox and running scenarios.
 
 ## Why this exists
 
@@ -22,10 +28,13 @@ This is pure developer infrastructure. It doesn't compete with any existing proj
 
 ## Getting started
 
-Requires [Docker](https://www.docker.com/) and the [Soroban / Stellar CLI](https://developers.stellar.org/docs/tools/developer-tools) on your PATH.
+Requires [Docker](https://www.docker.com/), [Node.js 18+](https://nodejs.org/), the [Rust toolchain](https://www.rust-lang.org/tools/install) with the `wasm32-unknown-unknown` target, and the [Soroban / Stellar CLI](https://developers.stellar.org/docs/tools/developer-tools) on your PATH.
+
+On Windows, install Visual Studio Build Tools with the **Desktop development with C++** workload so Cargo can find the MSVC linker (`link.exe`).
 
 ```bash
 npm install
+rustup target add wasm32-unknown-unknown
 node src/index.js init
 node src/index.js seed --config examples/sandbox.config.json
 node src/index.js deploy path/to/contract.wasm --as alice --name token
@@ -34,7 +43,11 @@ node src/index.js status
 node src/index.js reset
 ```
 
-See `examples/sandbox.config.json` and `examples/scenario.example.json` for the config formats.
+See `examples/sandbox.config.json` and `examples/scenario.example.json` for the config formats. The sandbox itself is implemented in JavaScript, while Soroban contract logic belongs in Rust and is deployed as WASM.
+
+### Rust contract example
+
+The repository includes an Address-based, authorization-aware Soroban Rust contract with Rust tests and an end-to-end scenario in `examples/contracts/token`. Follow its [README](examples/contracts/token/README.md) to test, build the contract to WASM, deploy it to the local sandbox, and run the scenario.
 
 ## Dashboard (React)
 

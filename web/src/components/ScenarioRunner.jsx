@@ -37,65 +37,82 @@ export default function ScenarioRunner() {
   }
 
   return (
-    <div className="panel">
-      <h2>Run a Scenario</h2>
+    <section className="panel" aria-labelledby="scenario-heading">
+      <h2 id="scenario-heading">Run a Scenario</h2>
       <div style={{ marginBottom: 12 }}>
+        <label htmlFor="scenario-path" className="visually-hidden">
+          Scenario JSON file path
+        </label>
         <input
+          id="scenario-path"
           type="text"
           value={path}
           onChange={(e) => setPath(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !running) {
+              e.preventDefault();
+              handleRun();
+            }
+          }}
           placeholder="path/to/scenario.json"
           disabled={running}
+          aria-label="Scenario JSON file path"
         />
-        <button onClick={handleRun} disabled={running}>
+        <button
+          onClick={handleRun}
+          disabled={running}
+          aria-label={running ? "Executing scenario..." : "Run scenario"}
+        >
           {running ? "Running..." : "Run"}
         </button>
       </div>
 
-      {running && (
-        <p className="loading-state">
-          Executing scenario steps against sandbox...
-        </p>
-      )}
-
-      {error && (
-        <div style={{ marginTop: 8 }} role="alert">
-          <p className="step">
-            <span className="fail font-bold">Runner Unavailable / Error:</span> {error}
+      <div aria-live="polite" aria-atomic="true">
+        {running && (
+          <p className="loading-state">
+            Executing scenario steps against sandbox...
           </p>
-          <button
-            className="retry-btn"
-            onClick={handleRun}
-            disabled={running}
-            style={{ marginTop: 8 }}
-          >
-            Retry Scenario
-          </button>
-        </div>
-      )}
+        )}
 
-      {outcome && (
-        <>
-          {outcome.results.length === 0 ? (
-            <p className="empty">Scenario completed with no steps executed.</p>
-          ) : (
-            outcome.results.map((r, i) => (
-              <div className="step" key={i}>
-                {r.ok ? (
-                  <span className="pass">PASS</span>
-                ) : (
-                  <span className="fail">FAIL</span>
-                )}{" "}
-                — {r.label}
-                {!r.ok && r.error && <div className="mono">{r.error}</div>}
-              </div>
-            ))
-          )}
-          <div className="summary">
-            {outcome.passed} passed, {outcome.failed} failed
+        {error && (
+          <div style={{ marginTop: 8 }} role="alert">
+            <p className="step">
+              <span className="fail font-bold">Runner Unavailable / Error:</span> {error}
+            </p>
+            <button
+              className="retry-btn"
+              onClick={handleRun}
+              disabled={running}
+              style={{ marginTop: 8 }}
+            >
+              Retry Scenario
+            </button>
           </div>
-        </>
-      )}
-    </div>
+        )}
+
+        {outcome && (
+          <div role="region" aria-label="Scenario execution outcome">
+            {outcome.results.length === 0 ? (
+              <p className="empty">Scenario completed with no steps executed.</p>
+            ) : (
+              outcome.results.map((r, i) => (
+                <div className="step" key={i}>
+                  {r.ok ? (
+                    <span className="pass">PASS</span>
+                  ) : (
+                    <span className="fail">FAIL</span>
+                  )}{" "}
+                  — {r.label}
+                  {!r.ok && r.error && <div className="mono">{r.error}</div>}
+                </div>
+              ))
+            )}
+            <div className="summary">
+              {outcome.passed} passed, {outcome.failed} failed
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

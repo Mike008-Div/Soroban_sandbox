@@ -20,6 +20,15 @@ export async function runScenario(scenarioPath) {
   const steps = scenario.steps || [];
   const results = [];
 
+  function resolveArgument(value) {
+    if (value && typeof value === "object" && value.account) {
+      const account = accounts[value.account];
+      if (!account) throw new Error(`unknown account "${value.account}"`);
+      return account.publicKey;
+    }
+    return value;
+  }
+
   for (const [i, step] of steps.entries()) {
     const label = step.label || `step ${i + 1}`;
     const contract = contracts[step.contract];
@@ -41,7 +50,7 @@ export async function runScenario(scenarioPath) {
       "--rpc-url", state.rpcUrl,
       "--network-passphrase", state.networkPassphrase,
       "--", step.method,
-      ...(step.args || []).flatMap((a) => [`--${a.name}`, String(a.value)]),
+      ...(step.args || []).flatMap((a) => [`--${a.name}`, String(resolveArgument(a.value))]),
     ];
 
     try {

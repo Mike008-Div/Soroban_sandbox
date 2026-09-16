@@ -53,7 +53,10 @@ export default function App() {
 
   return (
     <div className="app">
-      <div className="app-header">
+  <a href="#main-content" className="skip-link">
+    Skip to main content
+  </a>
+  <header className="app-header">
         <div>
           <h1>Soroban Sandbox</h1>
           <p className="subtitle">Local dev dashboard — accounts, contracts, and scenario runs.</p>
@@ -68,7 +71,7 @@ export default function App() {
             {retrying ? "Retrying..." : "Retry Connection"}
           </button>
         )}
-      </div>
+      </header>
 
       {error && (
         <div className="panel error-panel" role="alert">
@@ -84,10 +87,12 @@ export default function App() {
         </div>
       )}
 
-      <StatusHeader status={status} loading={loading && !status} error={error} />
-      <AccountsPanel accounts={accounts} loading={loading && Object.keys(accounts).length === 0} />
-      <ContractsPanel contracts={contracts} loading={loading && Object.keys(contracts).length === 0} />
-      <ScenarioRunner />
+      <main id="main-content">
+        <StatusHeader status={status} loading={loading && !status} error={error} />
+        <AccountsPanel accounts={accounts} loading={loading && Object.keys(accounts).length === 0} />
+        <ContractsPanel contracts={contracts} loading={loading && Object.keys(contracts).length === 0} />
+        <ScenarioRunner />
+      </main>
     </div>
   );
 }
