@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { validateWasmPath } from "../src/commands/deploy.js";
+import { validateWasmPath, extractContractId } from "../src/commands/deploy.js";
 
 test("validateWasmPath rejects missing or non-string input", () => {
   const r1 = validateWasmPath();
@@ -61,4 +61,17 @@ test("validateWasmPath accepts existing valid .wasm files", () => {
     fs.unlinkSync(fileAsWasm);
     fs.rmdirSync(tmpDir);
   }
+});
+
+const VALID_CONTRACT_ID = "C" + "A".repeat(55);
+
+test("extractContractId returns the last line when it looks like a contract id", () => {
+  const stdout = `Some deploy log line\nAnother line\n${VALID_CONTRACT_ID}\n`;
+  assert.equal(extractContractId(stdout), VALID_CONTRACT_ID);
+});
+
+test("extractContractId returns null for output that isn't a contract id", () => {
+  assert.equal(extractContractId("error: something went wrong\n"), null);
+  assert.equal(extractContractId(""), null);
+  assert.equal(extractContractId("CTOOSHORT\n"), null);
 });
