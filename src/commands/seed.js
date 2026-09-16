@@ -2,6 +2,15 @@ import { Keypair } from "@stellar/stellar-sdk";
 import { promises as fs } from "fs";
 import { readJson, writeJson, STATE_FILE, ACCOUNTS_FILE } from "../lib/state.js";
 import { warnIfSandboxDirNotGitignored } from "../lib/gitignore.js";
+import { withRetry } from "../lib/retry.js";
+import { parsePositiveInt } from "./init.js";
+
+export async function fundAccount(friendbotUrl, publicKey) {
+  const res = await fetch(`${friendbotUrl}?addr=${encodeURIComponent(publicKey)}`);
+  if (!res.ok) {
+    throw new Error(`friendbot returned status ${res.status}`);
+  }
+}
 
 export async function seedCommand(options) {
   const state = await readJson(STATE_FILE);
@@ -28,6 +37,12 @@ export async function seedCommand(options) {
     return;
   }
 
+  const retries = parsePositiveInt(options.retries, 3, "--retries");
+  if (retries === undefined) {
+    process.exitCode = 1;
+    return;
+  }
+
   const friendbotUrl = state.rpcUrl.replace(/\/soroban\/rpc$/, "/friendbot");
   const results = {};
 
@@ -36,12 +51,9 @@ export async function seedCommand(options) {
     console.log(`Funding ${acct.name} (${keypair.publicKey()})...`);
 
     try {
-      const res = await fetch(`${friendbotUrl}?addr=${encodeURIComponent(keypair.publicKey())}`);
-      if (!res.ok) {
-        console.warn(`  Warning: friendbot funding failed for ${acct.name} (status ${res.status})`);
-      }
+      await withRetry(() => fundAccount(friendbotUrl, keypair.publicKey()), { retries });
     } catch (err) {
-      console.warn(`  Warning: friendbot request failed for ${acct.name}: ${err.message}`);
+      console.warn(`  Warning: friendbot funding failed for ${acct.name} after ${retries + 1} attempts: ${err.message}`);
     }
 
     results[acct.name] = {
