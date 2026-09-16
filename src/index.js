@@ -39,17 +39,20 @@ program
   .option("--as <accountName>", "account to deploy from (defaults to first seeded account)")
   .option("--name <contractName>", "name to register the contract under (defaults to wasm filename)")
   .option("-q, --quiet", "suppress non-error output (for scripts/CI)")
+  .option("--json", "print a single machine-readable JSON result instead of formatted output")
   .action(deployCommand);
 
 program
   .command("run <scenarioPath>")
   .description("Run a scripted scenario of contract calls")
   .option("-q, --quiet", "suppress [PASS] lines and the summary; [FAIL] lines still print")
+  .option("--json", "print the full result as JSON instead of formatted [PASS]/[FAIL] lines")
   .action(runCommand);
 
 program
   .command("status")
   .description("Show the current sandbox state (node, accounts, contracts)")
+  .option("--json", "print status as JSON instead of formatted output")
   .action(statusCommand);
 
 program

@@ -45,18 +45,27 @@ export function extractContractId(stdout) {
 }
 
 export async function deployCommand(wasmPath, options = {}) {
-  const log = createLogger(options);
+  // --json implies quiet: the JSON result is the only thing that should hit stdout.
+  const log = createLogger({ quiet: options.quiet || options.json });
+
+  function fail(message) {
+    if (options.json) {
+      console.log(JSON.stringify({ success: false, error: message }, null, 2));
+    } else {
+      log.error(message);
+    }
+    process.exitCode = 1;
+  }
+
   const validation = validateWasmPath(wasmPath);
   if (!validation.valid) {
-    log.error(validation.error);
-    process.exitCode = 1;
+    fail(validation.error);
     return;
   }
 
   const state = await readJson(STATE_FILE);
   if (!state?.running) {
-    log.error("No running sandbox found. Run `sandbox init` first.");
-    process.exitCode = 1;
+    fail("No running sandbox found. Run `sandbox init` first.");
     return;
   }
 
@@ -65,8 +74,7 @@ export async function deployCommand(wasmPath, options = {}) {
   const deployer = accounts[deployerName];
 
   if (!deployer) {
-    log.error(`No account named "${deployerName}" found. Run \`sandbox seed\` first, or pass --as <name>.`);
-    process.exitCode = 1;
+    fail(`No account named "${deployerName}" found. Run \`sandbox seed\` first, or pass --as <name>.`);
     return;
   }
 
@@ -87,8 +95,7 @@ export async function deployCommand(wasmPath, options = {}) {
     ));
   } catch (err) {
     // Nothing written to contracts.json -- state is unchanged.
-    log.error(`Deploy failed:\n${err.message}`);
-    process.exitCode = 1;
+    fail(`Deploy failed:\n${err.message}`);
     return;
   }
 
@@ -96,20 +103,24 @@ export async function deployCommand(wasmPath, options = {}) {
   if (!contractId) {
     // The CLI exited 0 but didn't print something that looks like a
     // contract id -- don't guess, and don't record a bad entry.
-    log.error(`Deploy did not produce a recognizable contract id. Raw output:\n${stdout.trim()}`);
-    process.exitCode = 1;
+    fail(`Deploy did not produce a recognizable contract id. Raw output:\n${stdout.trim()}`);
     return;
   }
 
   const contracts = await readJson(CONTRACTS_FILE, {});
   const name = options.name || path.basename(wasmPath, ".wasm");
-  contracts[name] = {
+  const entry = {
     contractId,
     wasmPath,
     deployedBy: deployerName,
     deployedAt: new Date().toISOString(),
   };
+  contracts[name] = entry;
   await writeJson(CONTRACTS_FILE, contracts);
 
-  log.info(`Deployed. Contract "${name}" -> ${contractId}`);
+  if (options.json) {
+    console.log(JSON.stringify({ success: true, name, ...entry }, null, 2));
+  } else {
+    log.info(`Deployed. Contract "${name}" -> ${contractId}`);
+  }
 }
