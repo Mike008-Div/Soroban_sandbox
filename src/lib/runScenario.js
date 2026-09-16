@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import { run } from "./shell.js";
 import { readJson, STATE_FILE, ACCOUNTS_FILE, CONTRACTS_FILE } from "./state.js";
+import { validateScenario } from "./validate.js";
 
 /**
  * Checks every step's account/contract references against what's actually
@@ -47,7 +48,13 @@ export async function runScenario(scenarioPath) {
   const contracts = await readJson(CONTRACTS_FILE, {});
 
   const scenario = JSON.parse(await fs.readFile(scenarioPath, "utf-8"));
-  const steps = scenario.steps || [];
+
+  const schemaCheck = validateScenario(scenario);
+  if (!schemaCheck.valid) {
+    throw new Error(`Invalid scenario at ${scenarioPath}:\n  - ${schemaCheck.errors.join("\n  - ")}`);
+  }
+
+  const steps = scenario.steps;
 
   const preflight = validateScenarioReferences(steps, accounts, contracts);
   if (!preflight.valid) {
