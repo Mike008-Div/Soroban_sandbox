@@ -34,6 +34,24 @@ export function validateScenarioReferences(steps, accounts, contracts) {
 }
 
 /**
+ * Compares a step's raw CLI stdout against its `expect` value. The CLI
+ * prints many return types (e.g. i128) as a JSON-quoted string -- balance
+ * 100 comes back as the 5-character string `"100"`, not `100` -- so a
+ * literal `actual !== String(expect)` never matches even when the value is
+ * right. Unwraps one layer of JSON encoding before comparing, falling back
+ * to a plain string compare for output that isn't JSON at all.
+ */
+export function matchesExpectation(actual, expect) {
+  let normalized = actual;
+  try {
+    normalized = JSON.parse(actual);
+  } catch {
+    // Not JSON-encoded; compare the raw string as-is.
+  }
+  return String(normalized) === String(expect);
+}
+
+/**
  * Executes a scenario file's steps against the running sandbox.
  * Returns structured results instead of just printing, so both the
  * CLI command and the dashboard API can use it.
@@ -90,7 +108,7 @@ export async function runScenario(scenarioPath) {
     try {
       const { stdout } = await run("soroban", args, { silent: true });
       const actual = stdout.trim();
-      if (step.expect !== undefined && actual !== String(step.expect)) {
+      if (step.expect !== undefined && !matchesExpectation(actual, step.expect)) {
         results.push({ label, ok: false, error: `expected "${step.expect}", got "${actual}"`, actual });
       } else {
         results.push({ label, ok: true, output: actual });

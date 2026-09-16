@@ -49,6 +49,10 @@ See `examples/sandbox.config.json` and `examples/scenario.example.json` for the 
 
 The repository includes an Address-based, authorization-aware Soroban Rust contract with Rust tests and an end-to-end scenario in `examples/contracts/token`. Follow its [README](examples/contracts/token/README.md) to test, build the contract to WASM, deploy it to the local sandbox, and run the scenario.
 
+### Testing
+
+`npm test` runs the fast unit test suite (no Docker required). `npm run test:integration` runs the full lifecycle -- `init` → `seed` → `deploy` → `run` → `reset` -- against a real local Docker node (`integration/lifecycle.js`); it's slower (building the contract, pulling/starting the node) and doubles as living documentation of the whole workflow.
+
 ## Dashboard (React)
 
 `sandbox ui` starts a small Express API on top of your sandbox state, and can serve a built React dashboard:
