@@ -103,7 +103,7 @@ export async function deployCommand(wasmPath, options = {}) {
   if (!contractId) {
     // The CLI exited 0 but didn't print something that looks like a
     // contract id -- don't guess, and don't record a bad entry.
-    fail(`Deploy did not produce a recognizable contract id. Raw output:\n${stdout.trim()}`);
+    fail(`Deploy did not produce a recognizable contract ID. Raw output:\n${stdout.trim()}`);
     return;
   }
 
