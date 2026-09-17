@@ -25,7 +25,7 @@ const program = new Command();
 
 program
   .name("sandbox")
-  .description("Local testing sandbox for Soroban smart contracts")
+  .description("Local testing sandbox for Soroban smart contracts development")
   .version("0.1.0");
 
 program
