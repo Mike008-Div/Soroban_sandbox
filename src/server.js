@@ -51,7 +51,7 @@ export function createServer() {
   app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api/")) return next();
     res.sendFile(path.join(distDir, "index.html"), (err) => {
-      if (err) res.status(404).send("Dashboard not built yet. Run `cd web && npm install && npm run build`.");
+      if (err) res.status(404).send("Dashboard not built yet - please build it. Run `cd web && npm install && npm run build`.");
     });
   });
 
