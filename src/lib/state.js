@@ -21,14 +21,16 @@ export async function readJson(name, fallback = null, cwd = process.cwd()) {
   }
 }
 
+export async function clearState(cwd = process.cwd()) {
+  await fs.rm(path.join(cwd, SANDBOX_DIR), { recursive: true, force: true });
+}
+
 export async function writeJson(name, data, cwd = process.cwd()) {
   await ensureDir(cwd);
   await fs.writeFile(filePath(name, cwd), JSON.stringify(data, null, 2));
 }
 
-export async function clearState(cwd = process.cwd()) {
-  await fs.rm(path.join(cwd, SANDBOX_DIR), { recursive: true, force: true });
-}
+
 
 export async function sandboxDirExists(cwd = process.cwd()) {
   try {

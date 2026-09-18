@@ -23,7 +23,7 @@ export function redactText(text) {
   return text.replace(/\bS[A-Z2-7]{55}\b/g, "[REDACTED]");
 }
 
-// Child processes currently in flight, so a SIGINT/SIGTERM handler can kill
+// Active child processes currently in flight, so a SIGINT/SIGTERM handler can kill
 // them instead of leaving them orphaned when only the parent Node process
 // receives the signal (the usual case outside an interactive terminal --
 // e.g. under a process manager or `docker compose`-style supervisor).

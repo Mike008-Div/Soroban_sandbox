@@ -26,7 +26,7 @@ export async function runCommand(scenarioPath, options = {}) {
         log.error(`[FAIL] ${r.label}: ${r.error}`);
       }
     }
-    log.info(`\n${outcome.passed} passed, ${outcome.failed} failed`);
+    log.info(`\n${outcome.passed} tests passed, ${outcome.failed} tests failed`);
   }
   if (outcome.failed > 0) process.exitCode = 1;
 }

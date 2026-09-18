@@ -93,7 +93,7 @@ export async function initCommand(options = {}) {
     options.cwd,
   );
 
-  log.info(`Sandbox is up.\n  RPC: ${rpcUrl}\n  Network passphrase: ${networkPassphrase}`);
+  log.info(`Sandbox is ready.\n  RPC: ${rpcUrl}\n  Network passphrase: ${networkPassphrase}`);
   // Not gated by --quiet: this is a security-relevant warning, not noise.
   await warnIfSandboxDirNotGitignored(options.cwd);
 }
